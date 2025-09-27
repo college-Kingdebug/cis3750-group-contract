@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIS*3750 - Interactive Group Contract</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chosen Palette: Calm Professional (Slate Gray, White, and Sky Blue accent) -->
+    <!-- Application Structure Plan: The application is structured as an interactive dashboard and guide. It starts with a "Quick Reference" section for at-a-glance key rules (e.g., response times, absence limits). A sticky top navigation allows users to instantly jump to any of the 8 core sections of the contract. Each section is presented as a distinct card for clarity. An interactive "Scenario Helper" tool allows users to select a common situation (e.g., "I need to miss a meeting") and get a direct summary of the relevant protocol, highlighting the corresponding section. This structure was chosen to transform a static text document into a usable, task-oriented tool, making rules easier to find, understand, and remember, which is more effective for a team guide than a linear document. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Key numerical rules (deadlines, limits). -> Goal: Inform. -> Viz/Presentation: "Quick Reference" dashboard with stat cards. -> Interaction: None, provides immediate clarity. -> Justification: Surfaces the most critical, easily forgotten rules for quick access. -> Library/Method: HTML/Tailwind.
+        - Report Info: Attendance & Professionalism violation thresholds. -> Goal: Clarify consequences. -> Viz/Presentation: Simple visual "Violation Trackers" made with styled divs to show the progression from 0 to 3+ incidents. -> Interaction: Hovering over a step could show a tooltip (omitted for simplicity, but designed for it). -> Justification: Visualizing the steps makes the consequences of repeated violations more tangible and clear than text alone. -> Library/Method: HTML/Tailwind.
+        - Report Info: Conflict Resolution process. -> Goal: Guide user through a process. -> Viz/Presentation: A numbered, vertical step-flow diagram. -> Interaction: Clear visual separation of steps. -> Justification: A procedural diagram is more intuitive for following a sequence of actions than a numbered list within a paragraph. -> Library/Method: HTML/Tailwind.
+        - Report Info: Entire contract content. -> Goal: Organize & Explore. -> Viz/Presentation: An interactive "Scenario Helper" dropdown. -> Interaction: User selects a scenario, which triggers JS to display a summary and highlight the relevant contract section. -> Justification: This task-oriented feature provides immediate answers to common questions without requiring the user to read and interpret the entire document. -> Library/Method: Vanilla JavaScript.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .highlight-section {
+            transition: all 0.5s ease-in-out;
+            box-shadow: 0 0 0 3px #0284c7; /* sky-600 */
+            transform: scale(1.01);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-900">CIS*3750 Group Contract</h1>
+            <p class="text-slate-600 mt-2">An Interactive Guide for Our Team</p>
+        </header>
+        
+        <nav class="sticky top-0 bg-slate-50/80 backdrop-blur-lg z-10 py-3 mb-8 border-b">
+            <ul class="flex flex-wrap justify-center gap-x-4 gap-y-2">
+                <li><a href="#logistics" class="text-slate-700 hover:text-sky-600 font-medium">Logistics</a></li>
+                <li><a href="#attendance" class="text-slate-700 hover:text-sky-600 font-medium">Attendance</a></li>
+                <li><a href="#professionalism" class="text-slate-700 hover:text-sky-600 font-medium">Professionalism</a></li>
+                <li><a href="#work" class="text-slate-700 hover:text-sky-600 font-medium">Work</a></li>
+                <li><a href="#conflict" class="text-slate-700 hover:text-sky-600 font-medium">Conflict</a></li>
+                <li><a href="#cohesion" class="text-slate-700 hover:text-sky-600 font-medium">Cohesion</a></li>
+                <li><a href="#contributions" class="text-slate-700 hover:text-sky-600 font-medium">Contributions</a></li>
+                <li><a href="#agreement" class="text-slate-700 hover:text-sky-600 font-medium">Agreement</a></li>
+            </ul>
+        </nav>
+
+        <main class="space-y-8">
+
+            <section id="interactive-helper" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">Scenario Helper</h2>
+                <p class="text-slate-600 mb-4">Have a question? Select a situation to see the relevant protocol from our contract. This tool helps you quickly find the information you need without searching through the whole document.</p>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <select id="scenarioSelector" class="flex-grow p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500">
+                        <option value="none" selected>Select a scenario...</option>
+                        <option value="communication">How should I communicate with the team?</option>
+                        <option value="miss-meeting">What if I have to miss a meeting?</option>
+                        <option value="late">What happens if I'm late?</option>
+                        <option value="miss-deadline">What if I might miss a deadline?</option>
+                        <option value="disagreement">What if I have a disagreement with a teammate?</option>
+                        <option value="overwhelmed">What if I'm feeling overwhelmed with my tasks?</option>
+                    </select>
+                </div>
+                <div id="scenarioResult" class="mt-4 p-4 bg-sky-50 border-l-4 border-sky-500 text-sky-800 rounded-r-lg" style="display: none;">
+                </div>
+            </section>
+
+            <div id="contract-sections" class="space-y-8">
+                <section id="logistics" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">1. Team Logistics</h2>
+                    <p class="text-slate-600 mb-6">This section outlines our core operational procedures, including how we communicate, when we meet, and how we track our work. Following these guidelines ensures everyone stays informed and aligned.</p>
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="bg-slate-50 p-4 rounded-lg">
+                            <h3 class="font-bold text-lg mb-2">Communication</h3>
+                            <p>Primary: <strong class="text-sky-700">Discord</strong>. Backups: MS Teams or Email. Members must check daily and respond within <strong class="text-sky-700">24 hours</strong>.</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg">
+                            <h3 class="font-bold text-lg mb-2">Meetings</h3>
+                            <p>Weekly on <strong class="text-sky-700">Wednesdays, 4:20-5:20 PM</strong>, after the lab. Additional meetings scheduled via Discord poll.</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg">
+                            <h3 class="font-bold text-lg mb-2">Task Tracking</h3>
+                            <p>Tasks assigned in meetings, tracked in a shared <strong class="text-sky-700">Google Sheet</strong>. Progress updates required <strong class="text-sky-700">24 hours</strong> before meetings.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="attendance" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">2. Attendance</h2>
+                    <p class="text-slate-600 mb-6">Consistent attendance at labs and meetings is crucial for our success. This section details our attendance policy, including procedures for excused absences and the consequences of unexcused ones.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">Attendance Policy</h3>
+                            <ul class="list-disc list-inside space-y-2 text-slate-700">
+                                <li>Attendance is <strong class="text-red-600">mandatory</strong> for all labs and team meetings.</li>
+                                <li><strong>Excused Absences:</strong> Notify the team <strong class="text-sky-700">4 hours</strong> in advance for illness, emergencies, or academic conflicts.</li>
+                                <li><strong>Co-op Schedules:</strong> Give at least <strong class="text-sky-700">24 hours' notice</strong> if you need to miss a session due to co-op.</li>
+                                <li>Online meetings require <strong class="text-sky-700">active participation</strong>.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">Unexcused Absence Limit</h3>
+                            <p class="text-slate-600 mb-2">More than 2 unexcused absences is a contract violation.</p>
+                            <div class="flex items-center space-x-2 text-sm">
+                                <div class="w-1/4 text-center p-2 bg-green-100 text-green-800 rounded-l-lg">1st</div>
+                                <div class="w-1/4 text-center p-2 bg-yellow-100 text-yellow-800">2nd</div>
+                                <div class="w-1/4 text-center p-2 bg-red-100 text-red-800 font-bold border-2 border-red-500">Violation</div>
+                                <div class="w-1/4 text-center p-2 bg-red-200 text-red-900 rounded-r-lg">Escalate</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="professionalism" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">3. Professionalism</h2>
+                    <p class="text-slate-600 mb-6">Our team environment is built on respect, preparation, and punctuality. This section defines our professional standards to ensure productive and positive collaboration.</p>
+                     <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">Code of Conduct</h3>
+                            <ul class="list-disc list-inside space-y-2 text-slate-700">
+                                <li>Be <strong class="text-sky-700">prepared</strong> for meetings (tasks done, notes reviewed).</li>
+                                <li>Be <strong class="text-sky-700">punctual</strong>. Arriving 10+ minutes late without notice is unprofessional.</li>
+                                <li>Discuss mistakes <strong class="text-sky-700">constructively</strong> and respectfully.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">Unprofessional Behavior Limit</h3>
+                             <p class="text-slate-600 mb-2">3 or more instances trigger a private team discussion.</p>
+                            <div class="flex items-center space-x-2 text-sm">
+                                <div class="w-1/4 text-center p-2 bg-green-100 text-green-800 rounded-l-lg">1-2</div>
+                                <div class="w-1/4 text-center p-2 bg-yellow-100 text-yellow-800">3</div>
+                                <div class="w-1/4 text-center p-2 bg-red-100 text-red-800 font-bold border-2 border-red-500">Discussion</div>
+                                <div class="w-1/4 text-center p-2 bg-red-200 text-red-900 rounded-r-lg">Escalate</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="work" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">4. Work Assignments</h2>
+                     <p class="text-slate-600 mb-6">Fairness and transparency in workload are key to our team's performance. Here we detail how tasks are assigned and how to address workload concerns or potential delays.</p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-700">
+                        <li>Tasks are assigned in meetings based on skills, preference, and workload.</li>
+                        <li>Workload fairness is reviewed biweekly. Raise concerns at any time.</li>
+                        <li>If you might miss a deadline, you <strong class="text-red-600">must report it at least 48 hours in advance</strong>.</li>
+                    </ul>
+                </section>
+
+                <section id="conflict" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">5. Conflict Resolution</h2>
+                    <p class="text-slate-600 mb-6">Disagreements can happen, and having a clear process to resolve them is essential. This section provides a structured, four-step approach to ensure conflicts are handled constructively and fairly.</p>
+                    <div class="relative pl-8">
+                        <div class="absolute left-4 top-4 bottom-4 w-0.5 bg-slate-200"></div>
+                        <div class="relative mb-6">
+                            <div class="absolute -left-[38px] top-1.5 w-6 h-6 bg-sky-500 text-white rounded-full flex items-center justify-center font-bold text-sm">1</div>
+                            <h3 class="font-bold">Direct Discussion</h3>
+                            <p class="text-slate-600">Raise the issue respectfully with the person(s) involved.</p>
+                        </div>
+                        <div class="relative mb-6">
+                            <div class="absolute -left-[38px] top-1.5 w-6 h-6 bg-sky-500 text-white rounded-full flex items-center justify-center font-bold text-sm">2</div>
+                            <h3 class="font-bold">Team Vote</h3>
+                            <p class="text-slate-600">If unresolved, hold a team discussion and a majority vote for resolution.</p>
+                        </div>
+                        <div class="relative mb-6">
+                             <div class="absolute -left-[38px] top-1.5 w-6 h-6 bg-sky-500 text-white rounded-full flex items-center justify-center font-bold text-sm">3</div>
+                            <h3 class="font-bold">Mediation</h3>
+                            <p class="text-slate-600">If the issue persists, neutral team members will mediate.</p>
+                        </div>
+                        <div class="relative">
+                            <div class="absolute -left-[38px] top-1.5 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center font-bold text-sm">4</div>
+                            <h3 class="font-bold">Escalation</h3>
+                            <p class="text-slate-600">If still unresolved, escalate the issue to the instructor or TA.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="cohesion" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">6. Team Cohesion</h2>
+                    <p class="text-slate-600 mb-6">A strong team supports its members. This section focuses on our commitment to equal participation, mutual support, and fostering an inclusive environment where everyone feels valued.</p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-700">
+                        <li>Ensure <strong class="text-sky-700">equal participation</strong> through round-robin discussions.</li>
+                        <li>An anonymous Discord feedback channel is available for suggestions.</li>
+                        <li>Members struggling with tasks will receive <strong class="text-sky-700">assistance or reassignment</strong>.</li>
+                        <li>Members facing stress can request private discussions for adjustments.</li>
+                        <li>We commit to <strong class="text-sky-700">inclusivity</strong> and respecting diverse perspectives.</li>
+                    </ul>
+                </section>
+
+                <section id="contributions" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">7. Exceptional Contributions</h2>
+                    <p class="text-slate-600">We value and recognize members who go above and beyond. This section confirms that members who take on significant extra tasks, mentor teammates, or proactively resolve complex issues will be acknowledged for their exceptional contributions.</p>
+                </section>
+                
+                <section id="agreement" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">8. Agreement</h2>
+                    <p class="text-slate-600 mb-6">This final section formalizes our commitment to this contract. By signing, we agree to uphold these standards. It also outlines the process for revising the contract and the consequences of repeated violations.</p>
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                        <h3 class="font-bold text-lg mb-2">Signatures (7 Participants)</h3>
+                        <p class="text-slate-600 mb-4">By signing, members agree to follow this contract. It may be revised by a majority vote. Repeated violations (3+ total instances) may lower peer evaluation scores or lead to instructor escalation.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <p>Member 1: ___________________</p>
+                            <p>Member 2: ___________________</p>
+                            <p>Member 3: ___________________</p>
+                            <p>Member 4: ___________________</p>
+                            <p>Member 5: ___________________</p>
+                            <p>Member 6: ___________________</p>
+                            <p>Member 7: ___________________</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const scenarioSelector = document.getElementById('scenarioSelector');
+        const scenarioResult = document.getElementById('scenarioResult');
+        const sections = document.querySelectorAll('#contract-sections section');
+
+        const scenarios = {
+            communication: {
+                sectionId: 'logistics',
+                text: '<strong>Protocol:</strong> Use Discord for primary communication. Check messages daily and respond within 24 hours. See the Logistics section for full details.'
+            },
+            'miss-meeting': {
+                sectionId: 'attendance',
+                text: '<strong>Protocol:</strong> For excused absences (illness, emergency), notify the team at least 4 hours in advance. For co-op conflicts, provide 24 hours\' notice. Remember, more than 2 unexcused absences is a violation. See the Attendance section for details.'
+            },
+            late: {
+                sectionId: 'professionalism',
+                text: '<strong>Protocol:</strong> Arriving 10+ minutes late without notice is considered unprofessional. Repeated instances (3+) will trigger a team discussion. See the Professionalism section for details.'
+            },
+            'miss-deadline': {
+                sectionId: 'work',
+                text: '<strong>Protocol:</strong> You MUST report a potential missed deadline at least 48 hours in advance. The team will then work to reassign the task or adjust the deadline. See the Work Assignments section.'
+            },
+            disagreement: {
+                sectionId: 'conflict',
+                text: '<strong>Protocol:</strong> Start by raising the issue respectfully and directly. If that doesn\'t work, follow the 4-step process outlined in the Conflict Resolution section.'
+            },
+            overwhelmed: {
+                sectionId: 'cohesion',
+                text: '<strong>Protocol:</strong> Please speak up! You can request assistance, have a task reassigned, or request a private discussion for adjustments. Our team is committed to supporting each other. See the Team Cohesion section.'
+            }
+        };
+
+        scenarioSelector.addEventListener('change', (event) => {
+            const selectedValue = event.target.value;
+            
+            sections.forEach(sec => {
+                sec.classList.remove('highlight-section');
+            });
+
+            if (selectedValue === 'none') {
+                scenarioResult.style.display = 'none';
+            } else {
+                const scenario = scenarios[selectedValue];
+                scenarioResult.innerHTML = scenario.text;
+                scenarioResult.style.display = 'block';
+
+                const targetSection = document.getElementById(scenario.sectionId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => {
+                        targetSection.classList.add('highlight-section');
+                    }, 500); 
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
